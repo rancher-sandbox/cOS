@@ -255,7 +255,12 @@ switch_active() {
 
 switch_recovery() {
     if is_squashfs; then
-        mksquashfs $TARGET ${STATEDIR}/cOS/transition.squashfs -b 1024k -comp xz -Xbcj x86
+        if [[ $(uname -p) == "aarch64" ]]; then
+          XZ_FILTER="arm"
+        else
+          XZ_FILTER="x86"
+        fi
+        mksquashfs $TARGET ${STATEDIR}/cOS/transition.squashfs -b 1024k -comp xz -Xbcj ${XZ_FILTER}
         mv ${STATEDIR}/cOS/transition.squashfs ${STATEDIR}/cOS/recovery.squashfs
         rm -rf $TARGET
     else

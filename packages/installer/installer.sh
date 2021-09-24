@@ -9,6 +9,7 @@ ISOBOOT=${ISOMNT}/boot
 TARGET=/run/cos/target
 RECOVERYDIR=/run/cos/recovery
 RECOVERYSQUASHFS=${ISOMNT}/recovery.squashfs
+ARCH=$(uname -p)
 
 source /usr/lib/cos/functions.sh
 
@@ -265,7 +266,7 @@ install_grub()
     fi
 
     if [ "$COS_INSTALL_FORCE_EFI" = "true" ] || [ -e /sys/firmware/efi ]; then
-        GRUB_TARGET="--target=x86_64-efi --efi-directory=${TARGET}/boot/efi"
+        GRUB_TARGET="--target=${ARCH}-efi --efi-directory=${TARGET}/boot/efi"
     fi
 
     mkdir ${TARGET}/proc || true
