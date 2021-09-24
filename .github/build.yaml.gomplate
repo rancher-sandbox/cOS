@@ -837,7 +837,9 @@ jobs:
     {{{- if not (has $config.skip_images_flavor $flavor) }}}
     {{{- if $config.build_raw_image }}}
   {{{tmpl.Exec "raw_image" $flavor}}}
+        {{{- if $config.run_raw_image_test }}}
   {{{tmpl.Exec "raw_image_test_deploy" $flavor}}}
+        {{{- end }}}
   {{{- end }}}
 
       {{{- if $config.publish_cloud }}}
