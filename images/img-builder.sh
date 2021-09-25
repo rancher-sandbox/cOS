@@ -1,5 +1,6 @@
 #!/bin/bash
 
+ARCH="${ARCH:-x86_64}"
 # This is PoC for building images without requiring admin capabilities (CAP_SYS_ADMIN)
 MANIFEST=$1
 if [[ -z "${MANIFEST}" ]]; then
@@ -10,10 +11,10 @@ fi
 YQ_VERSION=$( yq -V | cut -d " " -f 3 | cut -d "." -f 1)
 
 if [[ "${YQ_VERSION}" == "3" ]]; then
-  YQ_REPO_COMMAND=(yq r "${MANIFEST}" 'raw_disk.repo')
+  YQ_REPO_COMMAND=(yq r "${MANIFEST}" "raw_disk.$ARCH.repo")
   YQ_PACKAGES_COMMAND=(yq r -j "${MANIFEST}")
 else
-  YQ_REPO_COMMAND=(yq e '.raw_disk.repo' "${MANIFEST}")
+  YQ_REPO_COMMAND=(yq e ".raw_disk.$ARCH.repo" "${MANIFEST}")
   YQ_PACKAGES_COMMAND=(yq e -o=json "$MANIFEST")
 fi
 
@@ -26,7 +27,7 @@ set -e
 # Create a luet config for local repositories
 cat << EOF > .luet.yaml
 repositories:
-  - name: cOS
+  - name: local
     enable: true
     urls:
       - build
@@ -43,7 +44,7 @@ EOF
 # Create root-tree for COS_RECOVERY
 while IFS=$'\t' read -r name target ; do
   luet install --system-target "$target" -y "$name"
-done < <("${YQ_PACKAGES_COMMAND[@]}" | jq -r '.raw_disk.packages[] | [.name, .target] | @tsv')
+done < <("${YQ_PACKAGES_COMMAND[@]}" | jq -r ".raw_disk.$ARCH.packages[] | [.name, .target] | @tsv")
 
 # Create a 2GB filesystem for COS_RECOVERY including the contents for root (grub config and squasfs container)
 truncate -s $((2048*1024*1024)) rootfs.part
